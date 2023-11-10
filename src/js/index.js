@@ -3,9 +3,9 @@ import '../css/style.css';
 import Phaser from 'phaser';
 
 function preload() {
-  this.load.image('bg', 'assets/Klappbruecke_Test1_BG.jpg');
-  this.load.image('bridge', 'assets/Klappbruecke_Test1_Bridge.png');
-  this.load.image('displays', 'assets/Klappbruecke_Displays.png');
+  this.load.image('bg', 'assets/Klappbruecke_Test1_BG.webp');
+  this.load.image('bridge', 'assets/Klappbruecke_Test1_Bridge.webp');
+  this.load.image('displays', 'assets/Klappbruecke_Displays.webp');
 }
 
 function create() {

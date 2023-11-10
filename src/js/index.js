@@ -3,17 +3,21 @@ import '../css/style.css';
 import Phaser from 'phaser';
 
 function preload() {
-  this.load.image('sky', 'assets/sky.png');
+  this.load.image('bg', 'assets/Klappbruecke_Test1_BG.jpg');
+  this.load.image('bridge', 'assets/Klappbruecke_Test1_Bridge.png');
+  this.load.image('displays', 'assets/Klappbruecke_Displays.png');
 }
 
 function create() {
-  this.add.image(400, 300, 'sky');
+  this.add.image(0, 0, 'bg').setOrigin(0).setScale(0.5);
+  this.add.image(0, 0, 'bridge').setOrigin(0).setScale(0.5);
+  this.add.image(0, 0, 'displays').setOrigin(0).setScale(0.5);
 }
 
 const config = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
+  width: 960,
+  height: 540,
   physics: {
     default: 'arcade',
     arcade: {

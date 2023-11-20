@@ -20,7 +20,7 @@
     "@new-objects/prettier-config": "^0.0.2",
     "autoprefixer": "^10.4.16",
     "cross-env": "^7.0.3",
-    "gh-pages": "^6.0.0",
+    "gh-pages": "^6.1.0",
     "husky": "^8.0.0",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.3",

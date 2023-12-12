@@ -5,12 +5,12 @@ import Game from './scenes/Game';
 
 export default new Phaser.Game({
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
+  width: 960,
+  height: 540,
   physics: {
     default: 'arcade',
     arcade: {
-      gravity: { y: 200 },
+      gravity: { y: 0 },
     },
   },
   scene: Game,

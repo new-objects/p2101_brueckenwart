@@ -6,8 +6,12 @@ import TitleScreen from './scenes/TitleScreen';
 
 const config = {
   type: Phaser.AUTO,
-  width: 960,
-  height: 540,
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: 960,
+    height: 540,
+  },
   physics: {
     default: 'arcade',
     arcade: {

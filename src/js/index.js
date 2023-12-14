@@ -2,8 +2,9 @@ import '../css/style.css';
 
 import Phaser from 'phaser';
 import Game from './scenes/Game';
+import TitleScreen from './scenes/TitleScreen';
 
-export default new Phaser.Game({
+const config = {
   type: Phaser.AUTO,
   width: 960,
   height: 540,
@@ -13,5 +14,11 @@ export default new Phaser.Game({
       gravity: { y: 0 },
     },
   },
-  scene: Game,
-});
+};
+
+const game = new Phaser.Game(config);
+
+game.scene.add('title', TitleScreen);
+game.scene.add('game', Game);
+
+game.scene.start('game');

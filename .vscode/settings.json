@@ -1,7 +1,4 @@
 {
   "editor.formatOnSave": true,
-  "javascript.format.enable": false,
-  "yaml.schemas": {
-    "https://json.schemastore.org/github-workflow.json": "file:///Users/plumps/Development/new-objects/template-frontend-phaser3/.github/workflows/deploy.yml"
-  }
+  "javascript.format.enable": false
 }

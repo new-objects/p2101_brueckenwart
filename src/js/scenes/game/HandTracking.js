@@ -10,6 +10,9 @@ export default class HandTracking {
     this.hands = options?.hands ? options.hands : 1;
     /** @type {HTMLVideoElement} */
     this.videoEl = document.querySelector(this.videoId);
+    if (!this.videoEl) {
+      throw new Error('No video element found');
+    }
     this.totalTime = 0;
     this.lastVideoTime = -1;
 

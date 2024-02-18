@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { HandTracking, mergeObjects } from '@new-objects/libs';
 import GUI from 'lil-gui';
 
-export class Klappbruecke extends Phaser.Scene {
+export class Brueckenwart extends Phaser.Scene {
   ROPES_TOTAL = 2;
   constructor() {
     super('Klappbrücke');

@@ -1,5 +1,5 @@
 {
-  "name": "klappbruecke",
+  "name": "p2101_brueckenwart",
   "private": true,
   "version": "0.0.4",
   "type": "module",
@@ -39,9 +39,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/new-objects/klappbruecke"
+    "url": "git+https://github.com/new-objects/p2101_brueckenwart"
   },
   "bugs": {
-    "url": "https://github.com/new-objects/klappbruecke/issues"
+    "url": "https://github.com/new-objects/p2101_brueckenwart/issues"
   }
 }

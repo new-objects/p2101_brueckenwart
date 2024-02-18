@@ -1,7 +1,7 @@
 import '../css/style.css';
 
 import Phaser from 'phaser';
-import { Klappbruecke } from './scenes/Game';
+import { Brueckenwart } from './scenes/Game';
 import { Intro } from './scenes/Intro';
 
 export default new Phaser.Game({
@@ -19,5 +19,5 @@ export default new Phaser.Game({
     width: 1280,
     height: 720,
   },
-  scene: [Klappbruecke, Intro],
+  scene: [Brueckenwart, Intro],
 });

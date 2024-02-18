@@ -30,7 +30,7 @@ export class Intro extends Phaser.Scene {
     this.input.keyboard.once(
       'keydown-SPACE',
       () => {
-        this.scene.start('Klappbruecke');
+        this.scene.start('Brueckenwart');
       },
       this,
     );

@@ -1,28 +1,23 @@
 import '../css/style.css';
 
 import Phaser from 'phaser';
-import Game from './scenes/Game';
-import TitleScreen from './scenes/TitleScreen';
+import { Klappbruecke } from './scenes/Game';
+import { Intro } from './scenes/Intro';
 
-const config = {
+export default new Phaser.Game({
   type: Phaser.AUTO,
-  scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: 960,
-    height: 540,
-  },
   physics: {
     default: 'arcade',
     arcade: {
-      gravity: { y: 0 },
+      debug: false,
     },
   },
-};
-
-const game = new Phaser.Game(config);
-
-game.scene.add('title', TitleScreen);
-game.scene.add('game', Game);
-
-game.scene.start('game');
+  scale: {
+    mode: Phaser.Scale.FIT,
+    parent: 'game',
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: 1280,
+    height: 720,
+  },
+  scene: [Klappbruecke, Intro],
+});

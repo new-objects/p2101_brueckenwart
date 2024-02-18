@@ -1,79 +1,106 @@
 import Phaser from 'phaser';
-import HandTracking from './game/HandTracking';
+import { HandTracking, mergeObjects } from '@new-objects/libs';
+import GUI from 'lil-gui';
 
-export default class Game extends Phaser.Scene {
+export class Klappbruecke extends Phaser.Scene {
+  ROPES_TOTAL = 2;
   constructor() {
-    super('game');
-    // init mediapipe hand tracking
-    this.handTracking = new HandTracking({ hands: 2 });
-    this.rightHandUp = false;
+    super('Klappbrücke');
+    this.handTracking = null;
+    this._hands = {
+      left: {},
+      right: {},
+    };
   }
 
   preload() {
-    this.load.spritesheet('fullscreen', 'assets/fullscreen.png', {
+    this.load.image('background', 'assets/Klappbruecke_Test1_BG.jpg');
+    this.load.spritesheet('fullscreenCtrl', 'assets/fullscreen.png', {
       frameWidth: 64,
       frameHeight: 64,
     });
-    this.load.image('bg', 'assets/Klappbruecke_Test1_BG.jpg');
-    this.load.image('bridge', 'assets/Klappbruecke_Test1_Bridge.png');
+    this.load.image('bridge', 'assets/Klappbruecke_Test1_Bridge_small.png');
     this.load.image('level1', 'assets/Klappbruecke_Test1_Ebene1.png');
     this.load.image('middleL', 'assets/Klappbruecke_Test1_MitteL.png');
     this.load.image('middleR', 'assets/Klappbruecke_Test1_MitteR.png');
     this.load.image('displays', 'assets/Klappbruecke_Displays.png');
     this.load.image('arrowUp', 'assets/Klappbruecke_Pfeile_up.png');
     this.load.image('arrowDown', 'assets/Klappbruecke_Pfeile_down.png');
-    // this.load.image('handLeft', 'assets/bird.png');
-    // this.load.image('handRight', 'assets/bird.png');
-    this.load.image('rope', 'assets/Seil_einzeln2.png');
-    this.load.image('car', 'assets/bird.png');
+    this.load.image('rope', 'assets/Seil_Griff.png');
+    this.load.image('car', 'assets/Klappbruecke_Test1_Auto_small.png');
+
+    const { width, height } = this.sys.game.canvas;
+    this._width = width;
+    this._height = height;
   }
 
   create() {
-    const { width, height } = this.scale;
-    this.width = width;
-    this.height = height;
+    // switch scenes
+    this.input.keyboard.once(
+      'keydown-SPACE',
+      () => {
+        this.scene.start('Intro');
+      },
+      this,
+    );
 
-    this.add.image(width / 2, height / 2, 'bg').setScale(width / 1920);
+    this.background = this.add.image(0, 0, 'background').setOrigin(0);
+    this.background.setDisplaySize(this._width, this._height);
 
     // create a group of ropes
-    this.ropes = this.physics.add.staticGroup();
+    this.createRopes();
 
     // adding a car
-    this.car = this.physics.add.sprite(0, height / 2, 'car');
-    this.car.setTint(0x00ff00);
-
-    for (let i = 0; i < 2; ++i) {
-      // splits the width of the screen into equal parts
-      const x = (this.width / 3) * (i + 1);
-      const y = -150;
-
-      /** @type {Phaser.Physics.Arcade.Sprite} */
-      const rope = this.ropes.create(x, y, 'rope').setScale(0.5);
-      /** @type {Phaser.Physics.Arcade.StaticBody} */
-      const body = rope.body;
-      body.updateFromGameObject();
-    }
+    this.car = this.physics.add
+      .sprite(30, this._height * 0.36, 'car')
+      .setOrigin(0);
+    //this.car.setTint(0x00ff00);
+    this.car.flipX = true;
 
     this.bridge = this.add
-      .image(width / 2, height / 2, 'bridge')
-      .setScale(height / 1080);
+      .sprite(0, this._width * 0.225, 'bridge')
+      .setOrigin(0);
+    this.bridge.displayWidth = this._width;
 
     this.middleL = this.add
-      .sprite(width / 2 - 150, height / 2 + 50, 'middleL')
-      .setScale(0.5)
+      .sprite(this._width * 0.33, this._height * 0.5, 'middleL')
       .setOrigin(0, 1);
-
-    this.middleL.setOrigin(0, 1);
+    this.middleL.setScale(0.7);
+    this.middleL.setRotation(0);
 
     this.middleR = this.add
-      .sprite(width / 2 + 150, height / 2 + 50, 'middleR')
-      .setScale(0.5)
-      .setOrigin(1);
+      .sprite(this._width * 0.67, this._height * 0.5, 'middleR')
+      .setOrigin(1, 1);
 
-    this.add.image(width / 2, height / 2, 'level1').setScale(0.5);
-    this.add.image(width / 2, height / 2, 'displays').setScale(0.5);
-    this.add.image(width / 2, height / 2, 'arrowUp').setScale(0.5);
-    this.add.image(width / 2, height / 2, 'arrowDown').setScale(0.5);
+    this.middleR.setScale(0.7);
+    this.middleR.setRotation(0);
+
+    this.add
+      .image(this._width * 0.5, this._height * 0.5, 'level1')
+      .setOrigin(0);
+
+    this.displays = this.add.image(
+      this._width * 0.5,
+      this._height * 0.5,
+      'displays',
+    );
+    this.displays.setScale(0.65);
+
+    this.arrowsUp = this.add.image(
+      this._width * 0.5,
+      this._height * 0.5,
+      'arrowUp',
+    );
+    this.arrowsUp.setScale(0.65);
+    this.arrowsUp.visible = false;
+
+    this.arrowsDown = this.add.image(
+      this._width * 0.5,
+      this._height * 0.5,
+      'arrowDown',
+    );
+    this.arrowsDown.setScale(0.65);
+    this.arrowsDown.visible = false;
 
     // UI
 
@@ -82,41 +109,58 @@ export default class Game extends Phaser.Scene {
     });
 
     // left hand
-    this.leftHandSprite = this.add.circle(width * 0.5, height * 0.5, 30);
-    this.leftHandSprite.setStrokeStyle(6, 0xe4bfc8);
-
-    this.physics.add.existing(this.leftHandSprite);
+    this._hands.left = this.add.circle(
+      this._width * 0.5,
+      this._height * 0.5,
+      20,
+      0xe4bfc8,
+    );
+    this._hands.left.name = 'left';
+    this._hands.left.setStrokeStyle(6, 0xe4bfc8);
+    this.physics.add.existing(this._hands.left);
 
     // right hand
-    this.rightHandSprite = this.add.circle(width * 0.5 + 100, height * 0.5, 30);
-    this.rightHandSprite.setStrokeStyle(6, 0xe4bfc8);
+    this._hands.right = this.add.circle(
+      this._width * 0.6,
+      this._height * 0.5,
+      20,
+      0xe4bfc8,
+    );
+    this._hands.right.name = 'right';
+    this._hands.right.setStrokeStyle(6, 0xe4bfc8);
+    this.physics.add.existing(this._hands.right);
 
-    this.physics.add.existing(this.rightHandSprite);
+    // overlap of hands and ropes
+    // this.physics.add.overlap(this.sprite, this.healthGroup, this.spriteHitHealth, null, this);
+    this.physics.add.overlap(
+      this._hands.left,
+      this.ropes,
+      this.handleCollision,
+      null,
+      this,
+    );
+    this.physics.add.overlap(
+      this._hands.right,
+      this.ropes,
+      this.handleCollision,
+      null,
+      this,
+    );
 
-    // add collision between hands and ropes
-    this.physics.add.collider(this.leftHandSprite, this.ropes, (_, rope) => {
-      this.leftHandCollides = true;
-      this.lastLeftHandRope = rope; // Store the collided rope
-    });
-    this.physics.add.collider(this.rightHandSprite, this.ropes, (_, rope) => {
-      this.rightHandCollides = true;
-      this.lastRightHandRope = rope; // Store the collided rope
-    });
-
-    const button = this.add
-      .image(800 - 16, 16, 'fullscreen', 0)
-      .setOrigin(1, 0)
+    this.fullscreenBtn = this.add
+      .image(this._width - 16, this._height - 16, 'fullscreenCtrl', 0)
+      .setOrigin(1, 1)
       .setInteractive();
 
-    button.on(
+    this.fullscreenBtn.on(
       'pointerup',
       function () {
         if (this.scale.isFullscreen) {
-          button.setFrame(0);
+          this.fullscreenBtn.setFrame(0);
 
           this.scale.stopFullscreen();
         } else {
-          button.setFrame(1);
+          this.fullscreenBtn.setFrame(1);
 
           this.scale.startFullscreen();
         }
@@ -126,97 +170,100 @@ export default class Game extends Phaser.Scene {
 
     // tweens
 
-    this.middleRTweenUp = this.tweens.add({
-      targets: this.middleR,
-      duration: 1000,
-      ease: 'Linear',
-      angle: 90,
-      paused: true,
-    });
+    // this.middleRTweenUp = this.tweens.add({
+    //   targets: this.middleR,
+    //   duration: 1000,
+    //   ease: 'Linear',
+    //   angle: 90,
+    //   paused: true,
+    // });
 
-    this.middleRTweenDown = this.tweens.add({
-      targets: this.middleR,
-      duration: 1000,
-      ease: 'Linear',
-      angle: 90,
-      paused: true,
-    });
+    // this.middleRTweenDown = this.tweens.add({
+    //   targets: this.middleR,
+    //   duration: 1000,
+    //   ease: 'Linear',
+    //   angle: 90,
+    //   paused: true,
+    // });
   }
 
   update() {
-    this.car.x += 2;
-
-    if (this.car.x >= this.width) this.car.x = 0;
-
-    // Get current rotation of the bridge parts
-    const middleLRot = this.middleL.rotation;
-    const middleRRot = this.middleR.rotation;
-
-    const bridgeIsElevated =
-      Math.abs(middleLRot) > 0.05 || // Tweak the values according to when you consider the bridge "elevated"
-      Math.abs(middleRRot) > 0.05; // Same for this
-
-    if (bridgeIsElevated) {
-      // Stop the car or make it move slowly
-      this.car.setVelocityX(0);
-    } else {
-      // If bridge is not elevated, move the car from left to right
-      this.car.setVelocityX(100); // Set speed value as needed
-    }
-
+    // this.car.x += 2;
+    // if (this.car.x >= this.width) this.car.x = 0;
+    // // Get current rotation of the bridge parts
+    // const middleLRot = this.middleL.rotation;
+    // const middleRRot = this.middleR.rotation;
+    // const bridgeIsElevated =
+    //   Math.abs(middleLRot) > 0.05 || // Tweak the values according to when you consider the bridge "elevated"
+    //   Math.abs(middleRRot) > 0.05; // Same for this
+    // if (bridgeIsElevated) {
+    //   // Stop the car or make it move slowly
+    //   this.car.setVelocityX(0);
+    // } else {
+    //   // If bridge is not elevated, move the car from left to right
+    //   this.car.setVelocityX(100); // Set speed value as needed
+    // }
     // get hand tracking results
     /** @type {import('@mediapipe/tasks-vision').GestureRecognizerResult} */
-    const trackedHandsMediapipe = this.handTracking.getResult().result;
-
+    // const trackedHandsMediapipe = this.handTracking.getResult().result;
     // map mediapipe results to game coordinates
-    this.trackedHands = this.calculateCoordinates(trackedHandsMediapipe);
+    //this.trackedHands = this.calculateCoordinates(trackedHandsMediapipe);
     // update hands
-    const { handLeft: leftHandTracked, handRight: rightHandTracked } =
-      this.trackedHands ?? {};
-    this.updateHandPosition(this.leftHandSprite, leftHandTracked);
-    this.updateHandPosition(this.rightHandSprite, rightHandTracked);
+    // const { handLeft: leftHandTracked, handRight: rightHandTracked } =
+    //   this.trackedHands ?? {};
+    // this.updateHandPosition(this.leftHandSprite, leftHandTracked);
+    // this.updateHandPosition(this.rightHandSprite, rightHandTracked);
+    // if (
+    //   rightHandTracked &&
+    //   rightHandTracked.gesture === 'Closed_Fist' &&
+    //   this.rightHandCollides
+    // ) {
+    //   console.log('right hand gesture: ', rightHandTracked.gesture);
+    //   if (!this.rightHandUp) {
+    //     console.log('bridge is DOWN');
+    //     if (!this.middleRTweenDown.isPlaying()) {
+    //       this.middleRTweenDown.reset();
+    //       this.middleRTweenDown.pause();
+    //     }
+    //     this.middleRTweenUp.play();
+    //     this.rightHandUp = true;
+    //   }
+    //   if (this.rightHandUp) {
+    //     console.log('bridge is UP');
+    //     if (!this.middleRTweenUp.isPlaying()) {
+    //       this.middleRTweenUp.reset();
+    //       this.middleRTweenUp.pause();
+    //     }
+    //     this.middleRTweenDown.play();
+    //     this.rightHandUp = false;
+    //   }
+    // }
+    // if (
+    //   leftHandTracked &&
+    //   leftHandTracked.gesture === 'Closed_Fist' &&
+    //   this.leftHandCollides
+    // ) {
+    //   console.log('left hand gesture: ', leftHandTracked.gesture);
+    //   this.tweens.add({
+    //     targets: this.middleL,
+    //     rotation: -Math.PI * 0.5,
+    //     duration: 1000,
+    //     yoyo: false,
+    //   });
+    // }
+  }
 
-    if (
-      rightHandTracked &&
-      rightHandTracked.gesture === 'Closed_Fist' &&
-      this.rightHandCollides
-    ) {
-      console.log('right hand gesture: ', rightHandTracked.gesture);
+  createRopes() {
+    // create a group of ropes
+    this.ropes = this.physics.add.staticGroup();
 
-      if (!this.rightHandUp) {
-        console.log('bridge is DOWN');
-        if (!this.middleRTweenDown.isPlaying()) {
-          this.middleRTweenDown.reset();
-          this.middleRTweenDown.pause();
-        }
-        this.middleRTweenUp.play();
-        this.rightHandUp = true;
-      }
+    for (let i = 0; i < this.ROPES_TOTAL; ++i) {
+      // splits the width of the screen into equal parts
+      const x = (this._width / (this.ROPES_TOTAL + 1)) * (i + 1);
+      const y = this._height * 0.2;
 
-      if (this.rightHandUp) {
-        console.log('bridge is UP');
-        if (!this.middleRTweenUp.isPlaying()) {
-          this.middleRTweenUp.reset();
-          this.middleRTweenUp.pause();
-        }
-        this.middleRTweenDown.play();
-        this.rightHandUp = false;
-      }
-    }
-
-    if (
-      leftHandTracked &&
-      leftHandTracked.gesture === 'Closed_Fist' &&
-      this.leftHandCollides
-    ) {
-      console.log('left hand gesture: ', leftHandTracked.gesture);
-
-      this.tweens.add({
-        targets: this.middleL,
-        rotation: -Math.PI * 0.5,
-        duration: 1000,
-        yoyo: false,
-      });
+      const rope = this.ropes.create(x, y, 'rope').setScale(0.5);
+      rope.body.updateFromGameObject();
     }
   }
 

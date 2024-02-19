@@ -206,9 +206,29 @@ export class Brueckenwart extends Phaser.Scene {
     if (results.detected) {
       this.updateHand(results.handLeft, this._hands.left, 220);
       this.updateHand(results.handRight, this._hands.right, 320);
-      
+
+      const ropesHeight = this._height * 0.2;
+      this.middleL.setRotation(
+        (this.ropes.children.entries[0].y - ropesHeight) * -0.005,
+      );
+
+      this.middleR.setRotation(
+        (this.ropes.children.entries[1].y - ropesHeight) * 0.005,
+      );
+      console.log(this.middleL.getTopLeft());
+      console.log(this.middleR.getTopRight());
+      console.log(this.middleR.rotation);
     }
-    // this.car.x += 1;
+    if (
+      this.middleL.rotation >= 0.1 ||
+      this.middleL.rotation <= -0.1 ||
+      (this.middleR.rotation <= 0.1 && this.middleR.rotation > 0) ||
+      (this.middleR.rotation >= -0.1 && this.middleR.rotation < 0)
+    )
+      this.car.x += 0;
+    else {
+      this.car.x += 1;
+    }
     if (this.car.x >= this._width) this.car.x = -10;
     // // Get current rotation of the bridge parts
     // const middleLRot = this.middleL.rotation;

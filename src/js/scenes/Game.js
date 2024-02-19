@@ -1,11 +1,10 @@
 import Phaser from 'phaser';
-import { HandTracking, mergeObjects } from '@new-objects/libs';
-import GUI from 'lil-gui';
+import { HandTracking, mergeObjects, webcamGui } from '@new-objects/libs';
 
 export class Brueckenwart extends Phaser.Scene {
   ROPES_TOTAL = 2;
   constructor() {
-    super('Klappbrücke');
+    super('Brueckenwart');
     this.handTracking = null;
     this._hands = {
       left: {},
@@ -54,7 +53,7 @@ export class Brueckenwart extends Phaser.Scene {
     this.car = this.physics.add
       .sprite(30, this._height * 0.36, 'car')
       .setOrigin(0);
-    //this.car.setTint(0x00ff00);
+    // this.car.setTint(0x00ff00);
     this.car.flipX = true;
 
     this.bridge = this.add
@@ -168,6 +167,19 @@ export class Brueckenwart extends Phaser.Scene {
       this,
     );
 
+    HandTracking.initialize({
+      hands: 2,
+      width: this._width,
+      height: this._height,
+      webcamOptions: { video: { width: this._width, height: this._height } },
+    }).then(tracker => {
+      this._handTracking = tracker;
+
+      // gui
+      // !!! - (debug) - replaced it with my local variant
+      webcamGui();
+    });
+
     // tweens
 
     // this.middleRTweenUp = this.tweens.add({
@@ -188,8 +200,16 @@ export class Brueckenwart extends Phaser.Scene {
   }
 
   update() {
-    // this.car.x += 2;
-    // if (this.car.x >= this.width) this.car.x = 0;
+    if (!this._handTracking) return;
+
+    const results = this._handTracking.getHands(this._width, this._height);
+    if (results.detected) {
+      this.updateHand(results.handLeft, this._hands.left, 220);
+      this.updateHand(results.handRight, this._hands.right, 320);
+      
+    }
+    // this.car.x += 1;
+    if (this.car.x >= this._width) this.car.x = -10;
     // // Get current rotation of the bridge parts
     // const middleLRot = this.middleL.rotation;
     // const middleRRot = this.middleR.rotation;
@@ -262,38 +282,45 @@ export class Brueckenwart extends Phaser.Scene {
       const x = (this._width / (this.ROPES_TOTAL + 1)) * (i + 1);
       const y = this._height * 0.2;
 
-      const rope = this.ropes.create(x, y, 'rope').setScale(0.5);
+      const rope = this.ropes.create(x, y, 'rope').setScale(0.5).setOrigin(1);
       rope.body.updateFromGameObject();
     }
   }
 
-  updateHandPosition(hand, handData) {
-    if (!handData) return;
+  selectClosestRope(hand, ropes) {
+    let closestRope = null;
+    let _closestDist = Number.POSITIVE_INFINITY;
 
-    const { x, y } = handData;
-    hand.setX(x);
-    hand.setY(y);
-    hand.body.reset(x, y);
+    this.ropes.children.each(rope => {
+      const ropeBottomCenter = rope.getBottomCenter();
+      const _dist = Phaser.Math.Distance.Between(
+        hand.x,
+        0,
+        ropeBottomCenter.x,
+        0,
+      );
+      if (_dist < _closestDist) {
+        closestRope = rope;
+        _closestDist = _dist;
+      }
+    });
+
+    return closestRope;
   }
 
-  calculateCoordinates(modelData) {
-    const hands = {};
-    if (modelData && modelData.landmarks && modelData.landmarks.length > 0) {
-      const { width } = this.game.config;
+  updateHand(trackedHand, handObject, targetY) {
+    if (trackedHand) {
+      handObject.setX(trackedHand.x);
+      handObject.setY(trackedHand.y);
 
-      modelData.handedness.forEach((hand, index) => {
-        const handName =
-          hand[0].categoryName === 'Left' ? 'handLeft' : 'handRight'; // left or right
-        const { x, y } = modelData.landmarks[index][8];
-        const gesture = modelData.gestures[index][0].categoryName;
-        hands[handName] = {
-          x: width - x * width || 0,
-          y: y * width || 0,
-          gesture,
-        };
-      });
+      if (trackedHand.gesture === 'Closed_Fist') {
+        handObject.fillColor = 0xffff00;
+
+        const closestRope = this.selectClosestRope(handObject, this.ropes);
+        closestRope.setY(trackedHand.y);
+      } else {
+        handObject.fillColor = 0xe4bfc8;
+      }
     }
-
-    return hands;
   }
 }

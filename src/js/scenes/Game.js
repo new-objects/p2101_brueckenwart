@@ -18,6 +18,7 @@ export class Brueckenwart extends Phaser.Scene {
       frameWidth: 64,
       frameHeight: 64,
     });
+    this.load.image('empty', 'assets/empty.png');
     this.load.image('bridge', 'assets/Klappbruecke_Test1_Bridge_small.png');
     this.load.image('level1', 'assets/Klappbruecke_Test1_Ebene1.png');
     this.load.image('middleL', 'assets/Klappbruecke_Test1_MitteL.png');
@@ -48,6 +49,9 @@ export class Brueckenwart extends Phaser.Scene {
 
     // create a group of ropes
     this.createRopes();
+
+    // create road blocks
+    this.createRoadBlocks();
 
     // adding a car
     this.car = this.physics.add
@@ -215,21 +219,24 @@ export class Brueckenwart extends Phaser.Scene {
       this.middleR.setRotation(
         (this.ropes.children.entries[1].y - ropesHeight) * 0.005,
       );
-      console.log(this.middleL.getTopLeft());
-      console.log(this.middleR.getTopRight());
-      console.log(this.middleR.rotation);
     }
-    if (
-      this.middleL.rotation >= 0.1 ||
-      this.middleL.rotation <= -0.1 ||
-      (this.middleR.rotation <= 0.1 && this.middleR.rotation > 0) ||
-      (this.middleR.rotation >= -0.1 && this.middleR.rotation < 0)
-    )
-      this.car.x += 0;
-    else {
-      this.car.x += 1;
+
+    this.car.x += 1;
+
+    if (this.car.x > 320 && this.car.x < 850) {
+      if (
+        this.middleL.rotation >= 0.1 ||
+        this.middleL.rotation <= -0.1 ||
+        (this.middleR.rotation <= 0.1 && this.middleR.rotation > 0) ||
+        (this.middleR.rotation >= -0.1 && this.middleR.rotation < 0)
+      ) {
+        this.car.x -= 1;
+      }
     }
-    if (this.car.x >= this._width) this.car.x = -10;
+
+    if (this.car.x > this._width) {
+      this.car.x = -60;
+    }
     // // Get current rotation of the bridge parts
     // const middleLRot = this.middleL.rotation;
     // const middleRRot = this.middleR.rotation;
@@ -305,6 +312,21 @@ export class Brueckenwart extends Phaser.Scene {
       const rope = this.ropes.create(x, y, 'rope').setScale(0.5).setOrigin(1);
       rope.body.updateFromGameObject();
     }
+  }
+
+  createRoadBlocks() {
+    this.roadblocks = this.physics.add.staticGroup();
+
+    const createRoadBlock = (x, y) => {
+      const roadBlock = this.roadblocks.create(x, y, 'empty');
+      roadBlock.setScale(1);
+      roadBlock.setVisible(false);
+      roadBlock.body.immovable = true;
+
+      return roadBlock;
+    };
+
+    createRoadBlock(this._width * 0.25, this._height * 0.4);
   }
 
   selectClosestRope(hand, ropes) {

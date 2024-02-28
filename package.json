@@ -35,7 +35,7 @@
     "@mediapipe/tasks-vision": "^0.10.10",
     "@new-objects/libs": "^0.1.6",
     "lil-gui": "^0.19.1",
-    "phaser": "^3.80.0"
+    "phaser": "^3.80.1"
   },
   "repository": {
     "type": "git",
